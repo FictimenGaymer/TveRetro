@@ -66,6 +66,7 @@ button{font:inherit;color:inherit}
 .osd.show{opacity:1}
 .osd .l1{font-size:clamp(22px,5vw,44px)}
 .osd .l2{font-size:clamp(16px,3.4vw,30px);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.osd .l3{font-size:clamp(14px,2.8vw,24px);opacity:.85}
 
 .wake{
   position:absolute;inset:0;z-index:8;display:grid;place-content:center;justify-items:center;gap:12px;
@@ -109,6 +110,9 @@ button{font:inherit;color:inherit}
 .vol{display:flex;align-items:center;gap:8px;color:var(--ink);font-weight:800;font-size:14px}
 .vol input{width:96px;accent-color:#5a4d33}
 .spacer{flex:1 1 0}
+.transport{flex:1 1 100%;justify-content:center;flex-wrap:wrap}
+.tv[data-mode="live"] .transport{display:none}
+.key.tog[aria-pressed="true"]{background:linear-gradient(180deg,#ffe19a,#f0b23a)}
 .hint{margin:12px 2px 0;font-size:13px;color:var(--muted);line-height:1.5}
 
 /* ---------- Guía ---------- */
@@ -173,7 +177,7 @@ details summary{cursor:pointer;font-weight:700}
     <button id="bannerX">Cerrar</button>
   </div>
 
-  <section class="tv" aria-label="Televisión">
+  <section class="tv" id="tv" aria-label="Televisión">
     <span class="brand" id="brand">Canal Retro</span>
     <div class="bezel">
       <div class="screen" id="screen">
@@ -183,7 +187,7 @@ details summary{cursor:pointer;font-weight:700}
           <canvas id="noise" width="192" height="108"></canvas>
           <div class="msg" id="msg"></div>
         </div>
-        <div class="osd" id="osd"><div class="l1" id="osdL1"></div><div class="l2" id="osdL2"></div></div>
+        <div class="osd" id="osd"><div class="l1" id="osdL1"></div><div class="l2" id="osdL2"></div><div class="l2 l3" id="osdL3"></div></div>
         <div class="scan"></div>
         <button class="wake" id="wake" aria-label="Encender la tele">
           <svg viewBox="0 0 24 24" fill="none" stroke="#ff5a45" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v8"/><path d="M6.5 6.8a8 8 0 1 0 11 0"/></svg>
@@ -193,6 +197,13 @@ details summary{cursor:pointer;font-weight:700}
     </div>
 
     <div class="panel">
+      <div class="grp transport">
+        <button class="key" id="prevEp" aria-label="Episodio anterior"><svg viewBox="0 0 24 24"><path d="M6 5v14M18 5l-9 7 9 7z"/></svg></button>
+        <button class="key" id="back10" aria-label="Retroceder 10 segundos">−10 s</button>
+        <button class="key" id="playPause" aria-label="Pausar o reanudar">Pausar</button>
+        <button class="key" id="fwd10" aria-label="Adelantar 10 segundos">+10 s</button>
+        <button class="key" id="nextEp" aria-label="Episodio siguiente"><svg viewBox="0 0 24 24"><path d="M18 5v14M6 5l9 7-9 7z"/></svg></button>
+      </div>
       <div class="grp">
         <button class="knob" id="knob" aria-label="Siguiente canal"></button>
         <div class="led" id="led" aria-live="polite">01</div>
@@ -202,13 +213,14 @@ details summary{cursor:pointer;font-weight:700}
         <button class="key" id="chUp" aria-label="Canal siguiente"><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>
       </div>
       <label class="vol">Volumen <input type="range" id="vol" min="0" max="100" value="80"></label>
-      <button class="key" id="mute" aria-pressed="false">Silencio</button>
+      <button class="key tog" id="mute" aria-pressed="false">Silencio</button>
+      <button class="key tog" id="cc" aria-pressed="false">Subtítulos: no</button>
       <span class="spacer"></span>
       <button class="key" id="full" aria-label="Pantalla completa"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
       <button class="key" id="openEd">Editar canales</button>
       <button class="key power" id="power" aria-pressed="false" aria-label="Encender o apagar"><i></i>Tele</button>
     </div>
-    <p class="hint">Teclado: flechas arriba y abajo cambian de canal, los números 1 a 9 saltan a un canal, M silencia y F pone pantalla completa.</p>
+    <p class="hint">Teclado: flechas arriba y abajo cambian de canal, izquierda y derecha mueven 10 segundos, espacio pausa, los números 1 a 9 saltan a un canal, M silencia y F pone pantalla completa.</p>
   </section>
 
   <aside class="guide" aria-label="Guía de programación">
@@ -229,12 +241,22 @@ details summary{cursor:pointer;font-weight:700}
     </section>
 
     <section>
+      <h3>Cómo se reproduce</h3>
+      <select id="modeSel" aria-label="Modo de reproducción">
+        <option value="own">A mi ritmo: empieza en el episodio 1 y guarda dónde te quedaste</option>
+        <option value="live">En vivo: como TV real, según el reloj</option>
+      </select>
+      <div class="btns"><button class="btn" id="mixReset">Reiniciar la Mezcla</button></div>
+    </section>
+
+    <section>
       <h3>Canal</h3>
       <div class="chrow">
         <select id="edCh" aria-label="Canal a editar"></select>
         <button class="btn" id="chNew">Nuevo</button>
         <button class="btn" id="chRen">Renombrar</button>
         <button class="btn" id="chDel">Borrar</button>
+        <button class="btn" id="chReset">Reiniciar avance</button>
       </div>
     </section>
 
@@ -297,6 +319,10 @@ function loadLearned(){
   return (PRESET&&PRESET.learned)||{};
 }
 let state = loadState(), learned = loadLearned();
+if(state.mode!=='live') state.mode='own';
+if(!state.progress||typeof state.progress!=='object') state.progress={};
+if(!state.mix||typeof state.mix!=='object') state.mix={ptr:{},cur:null,runLeft:0};
+if(typeof state.cc!=='boolean') state.cc=false;
 const save = ()=>{try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}};
 const saveL = ()=>{try{localStorage.setItem(LKEY,JSON.stringify(learned));}catch(e){}};
 
@@ -304,12 +330,12 @@ const saveL = ()=>{try{localStorage.setItem(LKEY,JSON.stringify(learned));}catch
 const dur = it => Math.max(30, Math.round(learned[it.vid] || (it.min||DEF_MIN)*60));
 
 function lineup(){
-  const list = state.channels.map(c=>({name:c.name,items:c.items}));
+  const list = state.channels.map(c=>({key:c.id,name:c.name,items:c.items}));
   const filled = state.channels.filter(c=>c.items.length);
   if(filled.length>=2){
     const mixed=[], max=Math.max(...filled.map(c=>c.items.length));
     for(let k=0;k<max;k++) filled.forEach(c=>{ if(k<c.items.length) mixed.push(c.items[k]); });
-    list.push({name:'Mezcla',items:mixed});
+    list.push({key:'mix',name:'Mezcla',items:mixed});
   }
   return list;
 }
@@ -335,7 +361,7 @@ const fmt = s => new Date(s*1000).toLocaleTimeString('es-MX',{hour:'numeric',min
 /* ---------- Estado de la tele ---------- */
 const screen=$('#screen'), msg=$('#msg'), osd=$('#osd');
 let cur = Math.max(0,state.ch|0), powered=false, curLoc=null, curItem=null;
-let wd=null, timer=null, osdT=null, errStreak=0, endLoop=0, muted=false, dirty=false;
+let wd=null, started=false, curMeta=null, timer=null, osdT=null, errStreak=0, endLoop=0, muted=false, dirty=false;
 let player=null, ready=false, apiFailed=false;
 let probe=null, probeReady=false, probeCb=null;
 
@@ -367,27 +393,44 @@ function onMainReady(){
 }
 function onMainState(e){
   if(e.data===1){ // reproduciendo
-    errStreak=0; hideMsg();
+    errStreak=0; started=true; hideMsg(); setPlayLabel(true);
+    applyCC(); setTimeout(applyCC,1000);
     let d=0; try{d=player.getDuration();}catch(x){}
     if(curItem&&d>30){
       if(d-player.getCurrentTime()>8) endLoop=0;
       const known=learned[curItem.vid]||(curItem.min||DEF_MIN)*60;
       if(Math.abs(d-known)>2){
         learned[curItem.vid]=Math.round(d); saveL();
-        clearTimeout(timer);
-        const left=d-player.getCurrentTime();
-        timer=setTimeout(()=>tune(cur,{ahead:.5}),left*1000+300);
+        if(state.mode==='live'){
+          clearTimeout(timer);
+          const left=d-player.getCurrentTime();
+          timer=setTimeout(()=>tune(cur,{ahead:.5}),left*1000+300);
+        }
         renderGuide();
       }
     }
+  }else if(e.data===2){ // pausa
+    setPlayLabel(false); saveProgress();
   }else if(e.data===0){ // terminó
     let d=0; try{d=player.getDuration();}catch(x){}
     if(curItem&&d>30){learned[curItem.vid]=Math.round(d); saveL();}
-    endLoop++;
-    const skip=(endLoop>3&&curLoc)?Math.max(0,curLoc.end-Date.now()/1000)+.5:.5;
-    tune(cur,{ahead:skip});
+    if(state.mode==='live'){
+      endLoop++;
+      const skip=(endLoop>3&&curLoc)?Math.max(0,curLoc.end-Date.now()/1000)+.5:.5;
+      tune(cur,{ahead:skip});
+    }else{
+      advanceOwn();
+      tune(cur,{noSave:true});
+    }
   }
 }
+function applyCC(){
+  try{
+    if(state.cc){player.loadModule('captions');}
+    else{player.unloadModule('captions');player.unloadModule('cc');}
+  }catch(e){}
+}
+function setPlayLabel(playing){const b=$('#playPause'); if(b) b.textContent=playing?'Pausar':'Reanudar';}
 function onMainError(e){
   errStreak++;
   const code=e.data, title=curItem?curItem.title:'este video';
@@ -403,7 +446,12 @@ function onMainError(e){
   showMsg('Saltando «'+title+'»',why);
   const wait=curLoc?Math.max(0,curLoc.end-Date.now()/1000)+.5:1;
   clearTimeout(timer);
-  timer=setTimeout(()=>tune(cur,{ahead:wait}),1800);
+  if(state.mode==='live'){
+    timer=setTimeout(()=>tune(cur,{ahead:wait}),1800);
+  }else{
+    const k0=cur;
+    timer=setTimeout(()=>{if(cur!==k0) return; advanceOwn(); tune(cur,{noSave:true});},1800);
+  }
 }
 
 /* Reproductor auxiliar: sirve para leer playlists y duraciones */
@@ -438,9 +486,76 @@ function probePlaylist(list){
   });
 }
 
+/* ---------- Avance guardado (modo "a mi ritmo") ---------- */
+function chKey(i){const ch=lineup()[i]; return ch?(ch.key||'mix'):null;}
+function saveProgress(){
+  if(!powered||state.mode!=='own'||!curItem||!ready||!started) return;
+  let t=0; try{t=player.getCurrentTime();}catch(e){return;}
+  if(!(t>=0)) return;
+  const k=chKey(cur); if(!k) return;
+  if(k==='mix'){
+    if(state.mix.cur&&state.mix.cur.vid===curItem.vid) state.mix.cur.t=Math.floor(t);
+  }else state.progress[k]={vid:curItem.vid,t:Math.floor(t)};
+  save();
+}
+function getProgress(ch,k){
+  const p=state.progress[k]; let i=0,t=0;
+  if(p){const j=ch.items.findIndex(x=>x.vid===p.vid); if(j>=0){i=j;t=Math.max(0,p.t-3);}}
+  return {i,t};
+}
+function setNext(ch,k,i){
+  state.progress[k]={vid:ch.items[(i+1)%ch.items.length].vid,t:0}; save();
+}
+const fmtT=s=>{s=Math.max(0,Math.floor(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');};
+
+/* ---------- Mezcla: programación tipo televisión ---------- */
+/* Cada serie lleva su propio contador. Solo se elige entre las series que van
+   más atrás, así todas pasan el episodio 1, luego el 2, etc. Al azar, una serie
+   puede dar 2 o 3 episodios seguidos (y luego espera a que las demás la alcancen). */
+function mixItem(c){
+  const ch=state.channels.find(x=>x.id===c.cid); if(!ch) return null;
+  return ch.items.find(x=>x.vid===c.vid)||null;
+}
+function mixPick(){
+  const m=state.mix, list=state.channels.filter(c=>c.items.length);
+  if(!list.length) return null;
+  let cid;
+  if(m.runLeft>0&&m.cur&&list.some(c=>c.id===m.cur.cid)){
+    cid=m.cur.cid; m.runLeft--;
+  }else{
+    const cnt=c=>m.ptr[c.id]||0, min=Math.min(...list.map(cnt));
+    let cand=list.filter(c=>cnt(c)===min);
+    if(cand.length>1&&m.cur){const o=cand.filter(c=>c.id!==m.cur.cid); if(o.length) cand=o;}
+    cid=cand[Math.floor(Math.random()*cand.length)].id;
+    const r=Math.random(); m.runLeft=r<.65?0:(r<.9?1:2);
+  }
+  const ch=list.find(c=>c.id===cid), n=m.ptr[cid]||0;
+  m.ptr[cid]=n+1;
+  m.cur={cid,n,vid:ch.items[n%ch.items.length].vid,t:0};
+  save();
+  return m.cur;
+}
+function mixCurrent(){
+  const m=state.mix;
+  if(m.cur&&mixItem(m.cur)) return m.cur;
+  m.runLeft=0; m.cur=null;
+  return mixPick();
+}
+function mixMeta(c){
+  const sc=state.channels.find(x=>x.id===c.cid); if(!sc) return null;
+  const num=(c.n%sc.items.length)+1;
+  return {text:((c.t>5||num>1)?'Sigue ':'Empieza ')+sc.name+', episodio '+num};
+}
+function advanceOwn(){
+  const k=chKey(cur), ch=lineup()[cur];
+  if(k==='mix'){mixPick();return;}
+  if(ch&&curItem){const i=ch.items.indexOf(curItem); setNext(ch,k,i<0?0:i);}
+}
+
 /* ---------- Sintonizar ---------- */
 function tune(idx,opts={}){
   const chs=lineup(); if(!chs.length) return;
+  if(!opts.noSave) saveProgress();
   cur=((idx%chs.length)+chs.length)%chs.length;
   if(!opts.quiet){state.ch=cur;save();}
   clearTimeout(timer);
@@ -454,17 +569,25 @@ function tune(idx,opts={}){
     showMsg('Este canal todavía no tiene episodios','Abre el editor y pega tus links de YouTube.',true);
     showOsd(); return;
   }
-  const t=Date.now()/1000+(opts.ahead||0);
-  curLoc=locate(ch.items,t); curItem=ch.items[curLoc.i];
+  let startAt=0; curMeta=null;
+  if(state.mode==='live'){
+    const t=Date.now()/1000+(opts.ahead||0);
+    curLoc=locate(ch.items,t); curItem=ch.items[curLoc.i]; startAt=curLoc.offset;
+  }else if(chKey(cur)==='mix'){
+    const c=mixCurrent(); curLoc=null; curItem=mixItem(c); curMeta=mixMeta(c); startAt=c.t>5?c.t-3:0;
+  }else{
+    const p=getProgress(ch,chKey(cur)); curLoc=null; curItem=ch.items[p.i]; startAt=p.t;
+  }
   showOsd();
   if(apiFailed){showMsg('No se pudo cargar YouTube','Revisa tu conexión a internet y recarga la página.');return;}
   if(!ready){showMsg('Conectando con YouTube…','');return;}
   hideMsg(); burst(opts.ahead?350:700);
+  started=false;
   try{
-    player.loadVideoById({videoId:curItem.vid,startSeconds:Math.floor(curLoc.offset)});
+    player.loadVideoById({videoId:curItem.vid,startSeconds:Math.floor(startAt)});
     if(muted)player.mute(); else player.unMute();
   }catch(e){}
-  timer=setTimeout(()=>tune(cur,{ahead:.5}),Math.max(1000,(curLoc.end-Date.now()/1000)*1000));
+  if(state.mode==='live') timer=setTimeout(()=>tune(cur,{ahead:.5}),Math.max(1000,(curLoc.end-Date.now()/1000)*1000));
 }
 
 function power(on){
@@ -479,7 +602,7 @@ function power(on){
       if(powered&&!ready&&!apiFailed) showMsg('YouTube bloqueó el reproductor (error 153)','Pasa cuando la página se abre directo desde el archivo o desde un visor. Súbela a un hosting con https (GitHub Pages o Netlify) y ábrela desde ahí.');
     },8000);
   }else{
-    clearTimeout(wd); clearTimeout(timer); hideMsg(); osd.classList.remove('show');
+    saveProgress(); clearTimeout(wd); clearTimeout(timer); hideMsg(); osd.classList.remove('show');
     try{ready&&player.stopVideo();}catch(e){}
   }
 }
@@ -493,9 +616,10 @@ function hideMsg(){msg.classList.remove('show');}
 function showOsd(){
   const ch=lineup()[cur]; if(!ch) return;
   $('#osdL1').textContent='CH '+String(cur+1).padStart(2,'0')+'  '+ch.name;
-  $('#osdL2').textContent=curItem?curItem.title:'';
+  $('#osdL2').textContent=curMeta?curMeta.text:(curItem?curItem.title:'');
+  $('#osdL3').textContent=(curMeta&&curItem)?curItem.title:'';
   osd.classList.add('show'); clearTimeout(osdT);
-  osdT=setTimeout(()=>osd.classList.remove('show'),4500);
+  osdT=setTimeout(()=>osd.classList.remove('show'),curMeta?7000:4500);
 }
 const nz=$('#noise'), nctx=nz.getContext('2d');
 let noiseUntil=0, raf=0;
@@ -520,18 +644,35 @@ function updatePanel(){
   document.title=state.station;
 }
 function renderGuide(){
-  const chs=lineup(), t=Date.now()/1000;
+  const chs=lineup(), t=Date.now()/1000, own=state.mode==='own';
   $('#rows').innerHTML=chs.map((ch,i)=>{
     const num=String(i+1).padStart(2,'0');
     const cu=i===cur?' aria-current="true"':'';
     if(!ch.items.length) return '<button class="row" data-ch="'+i+'"'+cu+'><span class="num">'+num+'</span><span class="txt"><b>'+esc(ch.name)+'</b><small>Sin episodios todavía</small></span></button>';
-    const loc=locate(ch.items,t), up=upcoming(ch.items,t,2);
-    const pct=Math.min(100,Math.max(0,(t-loc.start)/(loc.end-loc.start)*100));
-    const next=ch.items.length>1
-      ? 'Sigue a las '+fmt(up[1].start)+': '+up[1].it.title
-      : 'Vuelve a empezar a las '+fmt(loc.end);
+    let now,pct,next;
+    if(own&&ch.key==='mix'){
+      const c=state.mix.cur, it=c&&mixItem(c), sc=c&&state.channels.find(x=>x.id===c.cid);
+      if(it&&sc){
+        now=sc.name+', episodio '+(c.n%sc.items.length+1)+': '+it.title;
+        pct=Math.min(100,c.t/dur(it)*100);
+        next=c.t>5?'Vas en el minuto '+fmtT(c.t):'Empieza desde el inicio';
+      }else{
+        now='Todas las series, empezando por el episodio 1';
+        pct=0; next='Se elige el orden al azar';
+      }
+    }else if(own){
+      const p=getProgress(ch,ch.key||'mix'), it=ch.items[p.i];
+      now='Episodio '+(p.i+1)+' de '+ch.items.length+': '+it.title;
+      pct=Math.min(100,p.t/dur(it)*100);
+      next=p.t>5?'Vas en el minuto '+fmtT(p.t):'Empieza desde el inicio';
+    }else{
+      const loc=locate(ch.items,t), up=upcoming(ch.items,t,2);
+      now='Ahora: '+ch.items[loc.i].title;
+      pct=Math.min(100,Math.max(0,(t-loc.start)/(loc.end-loc.start)*100));
+      next=ch.items.length>1?'Sigue a las '+fmt(up[1].start)+': '+up[1].it.title:'Vuelve a empezar a las '+fmt(loc.end);
+    }
     return '<button class="row" data-ch="'+i+'"'+cu+'><span class="num">'+num+'</span><span class="txt"><b>'+esc(ch.name)+'</b>'
-      +'<span class="now">Ahora: '+esc(ch.items[loc.i].title)+'</span>'
+      +'<span class="now">'+esc(now)+'</span>'
       +'<span class="bar"><i style="width:'+pct+'%"></i></span>'
       +'<small>'+esc(next)+'</small></span></button>';
   }).join('');
@@ -627,7 +768,34 @@ $('#power').onclick=()=>power(!powered);
 $('#chUp').onclick=()=>tune(cur+1);
 $('#chDn').onclick=()=>tune(cur-1);
 $('#knob').onclick=()=>tune(cur+1);
-$('#shield').onclick=()=>{if(powered)showOsd();};
+$('#shield').onclick=()=>{if(!powered) return; if(state.mode==='own') pp(); showOsd();};
+function pp(){
+  if(!ready||!powered) return;
+  try{player.getPlayerState()===1?player.pauseVideo():player.playVideo();}catch(e){}
+}
+function seek(d){try{player.seekTo(Math.max(0,player.getCurrentTime()+d),true);}catch(e){}}
+function stepEp(dir){
+  if(state.mode!=='own'||!curItem) return;
+  if(chKey(cur)==='mix'){
+    if(dir>0) mixPick(); else if(state.mix.cur) state.mix.cur.t=0;
+    save(); tune(cur,{noSave:true}); return;
+  }
+  const ch=lineup()[cur], n=ch.items.length, i=ch.items.indexOf(curItem);
+  const k=(((i<0?0:i)+dir)%n+n)%n;
+  state.progress[chKey(cur)]={vid:ch.items[k].vid,t:0}; save();
+  tune(cur,{noSave:true});
+}
+$('#playPause').onclick=pp;
+$('#back10').onclick=()=>seek(-10);
+$('#fwd10').onclick=()=>seek(10);
+$('#prevEp').onclick=()=>stepEp(-1);
+$('#nextEp').onclick=()=>stepEp(1);
+function syncCC(){
+  const b=$('#cc'); b.setAttribute('aria-pressed',state.cc);
+  b.textContent=state.cc?'Subtítulos: sí':'Subtítulos: no';
+}
+$('#cc').onclick=()=>{state.cc=!state.cc;save();syncCC();applyCC();};
+syncCC();
 $('#rows').onclick=e=>{const b=e.target.closest('[data-ch]'); if(b) tune(+b.dataset.ch);};
 msg.onclick=e=>{if(e.target.dataset.open) openEditor();};
 $('#openEd').onclick=openEditor;
@@ -654,6 +822,9 @@ document.addEventListener('keydown',e=>{
   else if(/^[1-9]$/.test(e.key)&&+e.key<=lineup().length){tune(+e.key-1);}
   else if(e.key==='m'||e.key==='M') toggleMute();
   else if(e.key==='f'||e.key==='F') fullscreen();
+  else if(e.key===' '&&state.mode==='own'){e.preventDefault();pp();}
+  else if(e.key==='ArrowLeft'&&state.mode==='own') seek(-10);
+  else if(e.key==='ArrowRight'&&state.mode==='own') seek(10);
 });
 
 $('#stName').oninput=e=>{state.station=e.target.value||'Canal Retro';save();updatePanel();};
@@ -670,6 +841,22 @@ $('#chDel').onclick=()=>{
   const ch=state.channels[edCh]; if(!ch) return;
   if(!confirm('¿Borrar el canal «'+ch.name+'» y sus episodios?')) return;
   state.channels.splice(edCh,1); edCh=0; if(cur>=lineup().length) cur=0; afterEdit();
+};
+$('#modeSel').value=state.mode;
+$('#modeSel').onchange=e=>{
+  saveProgress(); state.mode=e.target.value; save();
+  $('#tv').dataset.mode=state.mode; dirty=true; renderGuide();
+};
+$('#chReset').onclick=()=>{
+  const ch=state.channels[edCh]; if(!ch) return;
+  delete state.progress[ch.id];
+  if(chKey(cur)===ch.id) started=false;
+  afterEdit(); setStatus('Avance reiniciado: «'+ch.name+'» empezará desde el episodio 1.');
+};
+$('#mixReset').onclick=()=>{
+  state.mix={ptr:{},cur:null,runLeft:0};
+  if(chKey(cur)==='mix') started=false;
+  afterEdit(); setStatus('Mezcla reiniciada: empezará otra vez con el episodio 1 de cada serie.');
 };
 $('#addBtn').onclick=addLines;
 $('#detBtn').onclick=()=>{const ch=state.channels[edCh]; if(ch&&ch.items.length) enrich(ch); else setStatus('Este canal no tiene episodios.');};
@@ -703,7 +890,9 @@ $('#bkLoad').onclick=()=>{
   try{
     const o=JSON.parse($('#bkBox').value);
     if(!o.state||!Array.isArray(o.state.channels)) throw 0;
-    state=o.state; learned=o.learned||{}; edCh=0; afterEdit(); setStatus('Respaldo restaurado.');
+    state=o.state; learned=o.learned||{}; edCh=0;
+    if(state.mode!=='live') state.mode='own'; if(!state.progress) state.progress={}; if(!state.mix||typeof state.mix!=='object') state.mix={ptr:{},cur:null,runLeft:0}; if(typeof state.cc!=='boolean') state.cc=false;
+    $('#tv').dataset.mode=state.mode; $('#modeSel').value=state.mode; syncCC(); afterEdit(); setStatus('Respaldo restaurado.');
   }catch(e){setStatus('Ese texto no es un respaldo válido.');}
 };
 
@@ -712,8 +901,12 @@ if(location.protocol==='file:'){
   $('#bannerX').onclick=()=>$('#fileBanner').classList.remove('show');
 }
 
+$('#tv').dataset.mode=state.mode;
 updatePanel(); renderGuide();
 setInterval(renderGuide,15000);
+setInterval(()=>{if(powered&&started) saveProgress();},5000);
+document.addEventListener('visibilitychange',()=>{if(document.hidden) saveProgress();});
+addEventListener('pagehide',saveProgress);
 })();
 </script>
 </body>
